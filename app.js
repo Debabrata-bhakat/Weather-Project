@@ -1,0 +1,49 @@
+const { response } = require("express");
+const express = require("express");
+const https = require("https");
+const bodyParser = require("body-parser");
+
+const app = express();
+
+app.use(bodyParser.urlencoded({extended: true}));
+
+app.get("/",function (req,res) {
+    res.sendFile(__dirname + "/index.html");
+   
+      });
+    app.post("/",function (req,res) {
+               // using https here is important
+    const query = req.body.cityName;
+    const apiKey = "4a8e7bb8047d9378b4cd8554c01ba5ce";
+    const units = "metric";
+    const url = "https://api.openweathermap.org/data/2.5/weather?q=" + query + "&appid=" + apiKey + "&units=" + units;
+    https.get(url,function (response) {
+        console.log(response.statusCode);
+        response.on("data",function (data) {
+            const weatherData = JSON.parse(data);
+            console.log(weatherData);
+            const temp = weatherData.main.temp;
+            console.log(temp);
+            const weatherDescription = weatherData.weather[0].description;
+            const icon = weatherData.weather[0].icon;
+            const imageURL = "http://openweathermap.org/img/wn/" + icon + "@2x.png"
+            res.write("<p>The weather is currently "+ weatherDescription + "</p>");
+            res.write("<h1>The temperature in " +  query + " is: "+ temp + " degree celcius</h1>");
+            res.write("<img src = " + imageURL + ">");
+            res.send();
+            // console.log(data);
+            // does the opposite
+            //     const object = {
+                //         name: "Debabrata Bhakat",
+                //         favFood: "Ice-cream"
+                // }
+                //     console.log(JSON.stringify(object);)
+            })
+        })
+          })
+
+//   })
+
+app.listen(3000,function () {
+    console.log("Server is running on port 3000");
+  })
